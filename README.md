@@ -50,6 +50,12 @@ npm run pack
 
 Output: `dist/FileSharing.zip`
 
+Publish a GitHub Release (requires [GitHub CLI](https://cli.github.com/) logged in once: `gh auth login`):
+
+```bash
+npm run release
+```
+
 ## Project layout
 
 | Path | Role |
