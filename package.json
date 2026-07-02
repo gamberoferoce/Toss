@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server/index.js",
     "build:exe": "node scripts/embed-ui.js && pkg server/index.js --targets node18-win-x64 --output dist/FileSharing.exe",
-    "build:host": "dotnet publish host/TossHost.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist",
+    "build:host": "powershell -ExecutionPolicy Bypass -File scripts/make-icon.ps1 && dotnet publish host/TossHost.csproj -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist",
     "prestart": "node scripts/embed-ui.js",
     "pack": "npm run build:exe && npm run build:host && powershell -ExecutionPolicy Bypass -File scripts/pack.ps1"
   },

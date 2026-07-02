@@ -18,6 +18,7 @@ sealed class MainForm : Form
         Text = "Toss";
         MinimumSize = new Size(960, 640);
         StartPosition = FormStartPosition.CenterScreen;
+        WindowState = FormWindowState.Maximized;
         BackColor = Color.FromArgb(5, 5, 8);
         Controls.Add(_web);
 

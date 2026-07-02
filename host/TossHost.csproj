@@ -9,6 +9,7 @@
     <AssemblyName>Toss</AssemblyName>
     <RootNamespace>TossHost</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
