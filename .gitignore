@@ -1,0 +1,6 @@
+node_modules/
+incoming/
+server/ui-html.js
+dist/
+*.log
+filesharing.log

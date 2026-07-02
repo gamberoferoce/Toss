@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FileSharing — Receiver</title>  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #050508;
+      color: #fff;
+      font-family: system-ui, -apple-system, sans-serif;
+      user-select: none;
+    }
+
+    #fx-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+      animation: orb-drift 12s ease-in-out infinite;
+    }
+
+    .bg-orb.a { width: 280px; height: 280px; background: #1e3a8a; top: 20%; left: 10%; }
+    .bg-orb.b { width: 220px; height: 220px; background: #312e81; bottom: 15%; right: 8%; animation-delay: -4s; animation-duration: 15s; }
+    .bg-orb.c { width: 160px; height: 160px; background: #0c4a6e; top: 55%; left: 55%; animation-delay: -7s; animation-duration: 18s; }
+
+    @keyframes orb-drift {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(30px, -20px) scale(1.08); }
+      66% { transform: translate(-20px, 25px) scale(0.95); }
+    }
+
+    #catch-zone {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 230px;
+      height: 230px;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      overflow: visible;
+    }
+
+    #catch-zone.incoming,
+    #catch-zone.landed { pointer-events: none; }
+
+    #catch-core {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      animation: idle-breathe 4.5s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    #catch-zone.incoming #catch-core,
+    #catch-zone.landed #catch-core { animation: none; }
+
+    .glow-disc {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      pointer-events: none;
+      background: transparent;
+      transform: translate(-50%, -50%);
+      box-shadow:
+        0 0 18px rgba(96, 165, 250, 0.12),
+        0 0 40px rgba(59, 130, 246, 0.06);
+    }
+
+    .glow-disc.inner { width: 186px; height: 186px; }
+    .glow-disc.outer { width: 218px; height: 218px; animation: glow-pulse 3s ease-in-out infinite; }
+
+    @keyframes glow-pulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(0.96); opacity: 0.35; }
+      50% { transform: translate(-50%, -50%) scale(1.05); opacity: 0.55; }
+    }
+
+    @keyframes idle-breathe {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.015) translateY(-4px); }
+    }
+
+    #ring {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .ring-glow {
+      fill: none;
+      stroke: #93c5fd;
+      stroke-width: 14;
+      stroke-linecap: round;
+      opacity: 0.2;
+      filter: url(#soft-blur);
+    }
+
+    .ring-track { fill: none; stroke: #1a1a22; stroke-width: 5; }
+
+    .ring-progress {
+      fill: none;
+      stroke: url(#ring-gradient);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 339.292;
+      stroke-dashoffset: 0;
+      transition: stroke 0.3s ease;
+    }
+
+    #catch-zone.incoming .ring-progress { stroke: #e0f2fe; }
+    #catch-zone.landed .ring-progress { stroke: #86efac; }
+    #catch-zone.incoming .glow-disc,
+    #catch-zone.landed .glow-disc {
+      box-shadow: 0 0 40px rgba(147, 197, 253, 0.9), 0 0 80px rgba(96, 165, 250, 0.55);
+    }
+
+    #label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: #555;
+      pointer-events: none;
+      text-align: center;
+      line-height: 1.7;
+      transition: color 0.3s ease, opacity 0.3s ease;
+    }
+
+    #catch-zone.incoming #label { color: #bfdbfe; opacity: 1; }
+    #catch-zone.landed #label { color: #86efac; }
+
+    #hint {
+      position: relative;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #475569;
+      text-align: center;
+      max-width: min(90vw, 480px);
+      transition: color 0.3s ease;
+    }
+
+    #bottom-bar {
+      position: fixed;
+      left: 50%;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #explorer-btn {
+      appearance: none;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: rgba(15, 23, 42, 0.72);
+      color: #bfdbfe;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 10px 16px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    #explorer-btn:hover { border-color: rgba(125, 211, 252, 0.55); color: #e0f2fe; }
+    #explorer-btn:active { background: rgba(30, 58, 138, 0.55); }
+    #explorer-btn:disabled { opacity: 0.45; cursor: wait; }
+
+    #hint.active { color: #93c5fd; }
+    #hint.done { color: #86efac; }
+
+    #file-meta {
+      display: block;
+      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: none;
+      color: #64748b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #ws-dot {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #334155;
+      z-index: 4;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.8);
+    }
+
+    #ws-dot.on { background: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.55); }
+
+    #phone-link {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      left: max(16px, env(safe-area-inset-left));
+      z-index: 4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(96, 165, 250, 0.22);
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(8px);
+      max-width: 168px;
+      transition: max-width 0.25s ease, padding 0.25s ease, border-radius 0.25s ease;
+    }
+
+    #phone-link.collapsed {
+      max-width: none;
+      width: 48px;
+      height: 48px;
+      padding: 0;
+      border-radius: 14px;
+      cursor: pointer;
+      gap: 0;
+    }
+
+    #phone-link-toolbar {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    #phone-link.collapsed #phone-link-toolbar {
+      display: none;
+    }
+
+    #qr-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+    #phone-link.collapsed #qr-body {
+      display: none;
+    }
+
+    #qr-mini {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+    }
+
+    #phone-link.collapsed #qr-mini {
+      display: flex;
+    }
+
+    #qr-mini img {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display: block;
+    }
+
+    #qr-minimize-btn,
+    #fullscreen-btn {
+      appearance: none;
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      background: rgba(15, 23, 42, 0.85);
+      color: #94a3b8;
+      font: inherit;
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    #qr-minimize-btn:hover,
+    #fullscreen-btn:hover {
+      color: #e0f2fe;
+      border-color: rgba(125, 211, 252, 0.45);
+      background: rgba(30, 58, 138, 0.55);
+    }
+
+    #qr-minimize-btn svg,
+    #fullscreen-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    #fullscreen-btn {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      right: 36px;
+      z-index: 4;
+    }
+
+    #fullscreen-btn .icon-exit { display: none; }
+    #fullscreen-btn.is-fullscreen .icon-enter { display: none; }
+    #fullscreen-btn.is-fullscreen .icon-exit { display: block; }
+
+    #phone-link-title {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    #qr-img {
+      display: block;
+      width: 120px;
+      height: 120px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    #phone-url {
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      color: #93c5fd;
+      text-align: center;
+      word-break: break-all;
+      line-height: 1.45;
+      user-select: text;
+    }
+
+    #alt-urls {
+      font-size: 8px;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 168px;
+    }
+
+    #alt-urls .alt-link {
+      display: block;
+      color: #7dd3fc;
+      user-select: text;
+      margin-top: 4px;
+    }
+
+    #net-hint {
+      font-size: 8px;
+      letter-spacing: 0.06em;
+      color: #475569;
+      text-align: center;
+      line-height: 1.45;
+      max-width: 168px;
+      margin-top: 4px;
+    }
+
+    #net-warning {
+      display: none;
+      font-size: 8px;
+      letter-spacing: 0.04em;
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.45);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: center;
+      line-height: 1.45;
+      max-width: 168px;
+      margin-top: 6px;
+    }
+
+    #net-warning.show {
+      display: block;
+    }
+
+    #welcome {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(5, 5, 8, 0.82);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+
+    #welcome.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .welcome-card {
+      width: min(100%, 380px);
+      padding: 28px 26px 22px;
+      border-radius: 20px;
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      background: rgba(15, 23, 42, 0.92);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      text-align: center;
+    }
+
+    .welcome-card h1 {
+      font-size: 13px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #e0f2fe;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .welcome-lead {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .welcome-steps {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 22px;
+      counter-reset: step;
+    }
+
+    .welcome-steps li {
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: #cbd5e1;
+      line-height: 1.55;
+      counter-increment: step;
+    }
+
+    .welcome-steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid rgba(96, 165, 250, 0.45);
+      color: #93c5fd;
+      font-size: 9px;
+      line-height: 18px;
+      text-align: center;
+    }
+
+    #welcome-btn {
+      appearance: none;
+      border: 1px solid rgba(125, 211, 252, 0.45);
+      background: rgba(37, 99, 235, 0.35);
+      color: #e0f2fe;
+      font: inherit;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 12px 22px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    #welcome-btn:hover {
+      background: rgba(37, 99, 235, 0.55);
+      border-color: rgba(191, 219, 254, 0.65);
+    }
+  </style></head>
+<body>
+  <canvas id="fx-canvas"></canvas>
+  <div class="bg-orb a"></div>
+  <div class="bg-orb b"></div>
+  <div class="bg-orb c"></div>
+  <div id="ws-dot" title="Connected"></div>
+
+  <button id="fullscreen-btn" type="button" aria-label="Fullscreen" title="Fullscreen">
+    <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+      <path d="M16 3h3a2 2 0 0 1 2 2v3" />
+      <path d="M8 21H5a2 2 0 0 1-2-2v-3" />
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+    </svg>
+    <svg class="icon-exit" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 3H5a2 2 0 0 0-2 2v4" />
+      <path d="M15 3h4a2 2 0 0 1 2 2v4" />
+      <path d="M9 21H5a2 2 0 0 1-2-2v-4" />
+      <path d="M15 21h4a2 2 0 0 0 2-2v-4" />
+    </svg>
+  </button>
+
+  <div id="welcome" class="show">
+    <div class="welcome-card">
+      <h1>FileSharing</h1>
+      <p class="welcome-lead">Keep this window open on your PC.</p>
+      <ol class="welcome-steps">
+        <li>Phone and PC on the same Wi‑Fi (not mobile data)</li>
+        <li>If the phone cannot connect, run <strong>Allow Network.bat</strong> as Administrator once</li>
+        <li>Scan the QR code with your phone</li>
+        <li>Choose a file, hold, charge the ring, swipe up</li>
+      </ol>
+      <button id="welcome-btn" type="button">Got it</button>
+    </div>
+  </div>
+
+  <div id="phone-link">
+    <div id="phone-link-toolbar">
+      <p id="phone-link-title">Scan with phone</p>
+      <button id="qr-minimize-btn" type="button" aria-label="Minimize QR code" title="Minimize">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
+      </button>
+    </div>
+    <div id="qr-body">
+      <img id="qr-img" alt="QR code to open on your phone" width="120" height="120">
+      <p id="phone-url">…</p>
+      <div id="alt-urls"></div>
+      <p id="net-warning"></p>
+      <p id="net-hint">Phone must be on the same Wi‑Fi</p>
+    </div>
+    <div id="qr-mini" title="Show QR code">
+      <img id="qr-mini-img" alt="" width="36" height="36">
+    </div>
+  </div>
+  <div id="catch-zone">
+    <div id="catch-core">
+      <div class="glow-disc outer"></div>
+      <div class="glow-disc inner"></div>
+      <svg id="ring" viewBox="0 0 120 120" aria-hidden="true">
+        <defs>
+          <filter id="soft-blur" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="3" />
+          </filter>
+          <linearGradient id="ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="50%" stop-color="#3b82f6" />
+            <stop offset="100%" stop-color="#7dd3fc" />
+          </linearGradient>
+        </defs>
+        <circle class="ring-glow" cx="60" cy="60" r="54" />
+        <circle class="ring-track" cx="60" cy="60" r="54" />
+        <circle class="ring-progress" cx="60" cy="60" r="54" />
+      </svg>
+      <div id="label">ON<br>STANDBY</div>
+    </div>
+  </div>
+
+  <div id="bottom-bar">
+    <div id="hint">
+      <span id="hint-text">Scan the QR — launch files from your phone</span>
+      <span id="file-meta"></span>
+    </div>    <button id="explorer-btn" type="button">Show in Explorer</button>
+  </div>
+
+  <script>
+    const catchZone = document.getElementById("catch-zone");
+    const catchCore = document.getElementById("catch-core");
+    const labelEl = document.getElementById("label");
+    const hintEl = document.getElementById("hint");
+    const hintTextEl = document.getElementById("hint-text");
+    const fileMetaEl = document.getElementById("file-meta");
+    const explorerBtn = document.getElementById("explorer-btn");
+    const welcomeEl = document.getElementById("welcome");
+    const welcomeBtn = document.getElementById("welcome-btn");
+    const qrImg = document.getElementById("qr-img");
+    const qrMiniImg = document.getElementById("qr-mini-img");
+    const phoneLinkEl = document.getElementById("phone-link");
+    const qrMinimizeBtn = document.getElementById("qr-minimize-btn");
+    const fullscreenBtn = document.getElementById("fullscreen-btn");
+    const phoneUrlEl = document.getElementById("phone-url");
+    const altUrlsEl = document.getElementById("alt-urls");
+    const netHintEl = document.getElementById("net-hint");
+    const netWarningEl = document.getElementById("net-warning");
+    const wsDot = document.getElementById("ws-dot");
+    const fxCanvas = document.getElementById("fx-canvas");
+    const fxCtx = fxCanvas.getContext("2d");
+
+    const HINT_IDLE = "Scan the QR — launch files from your phone";
+
+    const state = {      ws: null,
+      incoming: false,
+      landed: false,
+      anim: null,
+      resetTimer: null,
+      viewport: { w: 0, h: 0 },
+      ambient: [],
+      burst: [],
+    };
+
+    function formatSize(bytes) {
+      if (!bytes) return "";
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function resizeFx() {
+      state.viewport.w = window.innerWidth;
+      state.viewport.h = window.innerHeight;
+      fxCanvas.width = state.viewport.w;
+      fxCanvas.height = state.viewport.h;
+      if (!state.ambient.length) {
+        for (let i = 0; i < 28; i++) {
+          state.ambient.push({
+            x: Math.random() * state.viewport.w,
+            y: Math.random() * state.viewport.h,
+            r: Math.random() * 1.6 + 0.4,
+            vx: (Math.random() - 0.5) * 0.25,
+            vy: (Math.random() - 0.5) * 0.25,
+            a: Math.random() * 0.35 + 0.08,
+          });
+        }
+      }
+    }
+
+    function drawAmbient() {
+      fxCtx.clearRect(0, 0, state.viewport.w, state.viewport.h);
+      for (const p of state.ambient) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = state.viewport.w;
+        if (p.x > state.viewport.w) p.x = 0;
+        if (p.y < 0) p.y = state.viewport.h;
+        if (p.y > state.viewport.h) p.y = 0;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        fxCtx.fillStyle = "rgba(96, 165, 250, " + p.a + ")";
+        fxCtx.fill();
+      }
+    }
+
+    function drawBurst() {
+      const alive = [];
+      for (const p of state.burst) {
+        p.vy += 0.22;
+        p.vx *= 0.98;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.016;
+        p.r *= 0.985;
+        if (p.life <= 0) continue;
+        fxCtx.beginPath();
+        fxCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        fxCtx.fillStyle = "rgba(" + p.color + "," + p.life + ")";
+        fxCtx.fill();
+        alive.push(p);
+      }
+      state.burst = alive;
+    }
+
+    function tick() {
+      drawAmbient();
+      drawBurst();
+      requestAnimationFrame(tick);
+    }
+
+    function spawnBurst() {
+      const rect = catchZone.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      for (let i = 0; i < 52; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 8 + 3;
+        state.burst.push({
+          x: cx + (Math.random() - 0.5) * 36,
+          y: cy + (Math.random() - 0.5) * 36,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: Math.random() * 4 + 1.5,
+          life: Math.random() * 0.5 + 0.5,
+          color: Math.random() > 0.5 ? "134, 239, 172" : "96, 165, 250",
+        });
+      }
+    }
+
+    function resetIdle() {
+      clearTimeout(state.resetTimer);
+      if (state.anim) {
+        state.anim.cancel();
+        state.anim = null;
+      }
+      state.incoming = false;
+      state.landed = false;
+      catchZone.className = "";
+      catchCore.style.transform = "";
+      catchCore.style.opacity = "";
+      labelEl.innerHTML = "ON<br>STANDBY";
+      hintEl.className = "";
+      hintTextEl.textContent = HINT_IDLE;
+      fileMetaEl.textContent = "";    }
+
+    function playIncoming(name) {
+      if (state.incoming) return;
+      clearTimeout(state.resetTimer);
+      if (state.anim) state.anim.cancel();
+
+      state.incoming = true;
+      state.landed = false;
+      catchZone.className = "incoming";
+      labelEl.innerHTML = "IN<br>COMING";
+      hintEl.className = "active";
+      hintTextEl.textContent = "File incoming…";      fileMetaEl.textContent = name || "";
+
+      const riseFrom = state.viewport.h * 1.12;
+      catchCore.style.opacity = "0.35";
+
+      state.anim = catchCore.animate([
+        { transform: "translate3d(0," + riseFrom + "px,0) scale(0.42, 0.68)", opacity: 0.35 },
+        { transform: "translate3d(0,-58px,0) scale(0.97, 1.05)", opacity: 1, offset: 0.72 },
+        { transform: "translate3d(0,12px,0) scale(1.08, 0.92)", opacity: 1, offset: 0.88 },
+        { transform: "translate3d(0,0,0) scale(1, 1)", opacity: 1 },
+      ], {
+        duration: 920,
+        easing: "cubic-bezier(0.12, 0.84, 0.18, 1)",
+        fill: "forwards",
+      });
+    }
+
+    function playLanded(name, size) {
+      state.landed = true;
+      catchZone.className = "landed";
+      labelEl.innerHTML = "RE<br>CEIVED";
+      hintEl.className = "done";
+      hintTextEl.textContent = "File saved on this PC";      fileMetaEl.textContent = (name || "file") + (size ? " · " + formatSize(size) : "");
+
+      spawnBurst();
+
+      if (state.anim) {
+        state.anim.cancel();
+        state.anim = null;
+      }
+
+      catchCore.animate([
+        { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+        { transform: "translate3d(0,-10px,0) scale(1.04)", opacity: 1, offset: 0.35 },
+        { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+      ], { duration: 480, easing: "cubic-bezier(0.34, 1.45, 0.64, 1)", fill: "forwards" });
+
+      state.resetTimer = setTimeout(resetIdle, 4200);
+    }
+
+    function onMessage(data) {
+      if (data.type === "launch") {
+        playIncoming(data.name);
+      } else if (data.type === "received") {
+        if (!state.incoming) playIncoming(data.name);
+        playLanded(data.name, data.size);
+      }
+    }
+
+    async function openInExplorer() {
+      explorerBtn.disabled = true;
+      try {
+        const res = await fetch("/api/open-incoming", { method: "POST" });
+        if (!res.ok) throw new Error("open failed");
+      } catch (err) {
+        console.error(err);
+      } finally {
+        explorerBtn.disabled = false;
+      }
+    }
+
+    explorerBtn.addEventListener("click", openInExplorer);
+
+    async function loadInfo() {
+      try {
+        const res = await fetch("/api/info");
+        if (!res.ok) return;
+        const info = await res.json();
+        if (info.warnLocalhost) {
+          phoneUrlEl.textContent = "No LAN IP — check network";
+          netWarningEl.textContent = "PC has no Wi-Fi/Ethernet IP. Connect the PC to your home network.";
+          netWarningEl.classList.add("show");
+          netHintEl.textContent = "";
+        } else {
+          phoneUrlEl.textContent = info.phoneUrl;
+          if (info.lanReachable === false) {
+            netWarningEl.textContent =
+              "Phone may not connect — run Allow Network.bat as Administrator, then restart FileSharing.";
+            netWarningEl.classList.add("show");
+            netHintEl.textContent = "Do not test the phone URL on this PC — use your phone.";
+          } else {
+            netWarningEl.classList.remove("show");
+            netWarningEl.textContent = "";
+            netHintEl.textContent = "Phone must be on the same Wi-Fi";
+          }
+        }
+        qrImg.src = "/api/qr.svg?url=" + encodeURIComponent(info.phoneUrl);
+        qrMiniImg.src = qrImg.src;
+
+        const extras = (info.allUrls || []).filter((row) => row.url !== info.phoneUrl);
+        if (extras.length) {
+          altUrlsEl.innerHTML = "If QR fails, try:<br>" + extras
+            .map((row) => '<span class="alt-link">' + row.url + "</span>")
+            .join("");
+        } else {
+          altUrlsEl.innerHTML = "";
+        }
+      } catch (err) {
+        console.error(err);
+        phoneUrlEl.textContent = "Server unreachable";
+        altUrlsEl.innerHTML = "";
+        netWarningEl.classList.remove("show");
+      }
+    }
+
+    function setQrCollapsed(collapsed) {
+      phoneLinkEl.classList.toggle("collapsed", collapsed);
+      sessionStorage.setItem("filesharing-qr-collapsed", collapsed ? "1" : "0");
+    }
+
+    function initQrPanel() {
+      if (sessionStorage.getItem("filesharing-qr-collapsed") === "1") {
+        setQrCollapsed(true);
+      }
+      qrMinimizeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        setQrCollapsed(true);
+      });
+      phoneLinkEl.addEventListener("click", () => {
+        if (phoneLinkEl.classList.contains("collapsed")) {
+          setQrCollapsed(false);
+        }
+      });
+    }
+
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement);
+    }
+
+    function updateFullscreenBtn() {
+      const on = isFullscreen();
+      fullscreenBtn.classList.toggle("is-fullscreen", on);
+      const label = on ? "Exit fullscreen" : "Fullscreen";
+      fullscreenBtn.setAttribute("aria-label", label);
+      fullscreenBtn.title = label;
+    }
+
+    function initFullscreen() {
+      fullscreenBtn.addEventListener("click", () => {
+        if (isFullscreen()) {
+          const exit = document.exitFullscreen || document.webkitExitFullscreen;
+          if (exit) exit.call(document).catch(() => {});
+        } else {
+          const el = document.documentElement;
+          const req = el.requestFullscreen || el.webkitRequestFullscreen;
+          if (req) req.call(el).catch(() => {});
+        }
+      });
+      document.addEventListener("fullscreenchange", updateFullscreenBtn);
+      document.addEventListener("webkitfullscreenchange", updateFullscreenBtn);
+      updateFullscreenBtn();
+    }
+
+    function initWelcome() {
+      if (sessionStorage.getItem("filesharing-welcome") === "1") {
+        welcomeEl.classList.remove("show");
+        return;
+      }
+      welcomeEl.classList.add("show");
+      welcomeBtn.addEventListener("click", () => {
+        sessionStorage.setItem("filesharing-welcome", "1");
+        welcomeEl.classList.remove("show");
+      });
+    }
+
+    function connect() {
+      const proto = location.protocol === "https:" ? "wss:" : "ws:";
+      state.ws = new WebSocket(proto + "//" + location.host);
+      state.ws.onopen = () => wsDot.classList.add("on");
+      state.ws.onclose = () => {
+        wsDot.classList.remove("on");
+        setTimeout(connect, 1000);
+      };
+      state.ws.onerror = () => state.ws.close();
+      state.ws.onmessage = (e) => {
+        try {
+          onMessage(JSON.parse(e.data));
+        } catch {
+          /* ignore */
+        }
+      };
+    }
+
+    window.addEventListener("resize", resizeFx);
+    resizeFx();
+    tick();
+    initWelcome();
+    initQrPanel();
+    initFullscreen();
+    loadInfo();
+    setInterval(loadInfo, 15000);
+    connect();
+  </script>
+</body>
+</html>

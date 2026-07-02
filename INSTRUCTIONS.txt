@@ -1,0 +1,31 @@
+FILESHARING — Quick start
+==========================
+
+REQUIREMENTS
+  • Windows 10/11
+  • PC and phone on the same Wi-Fi network
+
+GETTING STARTED
+  1. Double-click FileSharing.exe
+  2. Your browser opens the receiver page on this PC
+  3. Do NOT close the black window — keep it open while sharing files
+
+FROM YOUR PHONE
+  1. Scan the QR code shown on the PC
+  2. Tap "Choose file"
+  3. Hold the circle, charge the ring, swipe up to send
+
+WHERE FILES GO
+  %APPDATA%\FileSharing\incoming
+  (created automatically — use "Show in Explorer" on the PC page)
+
+TROUBLESHOOTING
+  • Phone won't connect → same Wi-Fi? Allow Windows Firewall on first launch.
+  • Windows blocks the exe → "More info" → "Run anyway"
+
+TO STOP
+  Close the FileSharing window.
+
+NOTE FOR DEVELOPERS
+  Run from source: npm install && npm start
+  Rebuild exe: npm run pack
