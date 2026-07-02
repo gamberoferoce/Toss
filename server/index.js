@@ -9,6 +9,12 @@ const multer = require("multer");
 const QRCode = require("qrcode");
 const WebSocket = require("ws");
 
+// ponytail: TOSS_* aliases for dev; host still sets FILESHARING_* internally
+if (process.env.TOSS_OPEN != null) process.env.FILESHARING_OPEN = process.env.TOSS_OPEN;
+if (process.env.TOSS_SERVER_ONLY != null) {
+  process.env.FILESHARING_SERVER_ONLY = process.env.TOSS_SERVER_ONLY;
+}
+
 const DATA_ROOT = process.pkg
   ? path.join(process.env.APPDATA || path.dirname(process.execPath), "Toss")
   : path.join(__dirname, "..");

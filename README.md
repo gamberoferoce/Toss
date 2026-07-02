@@ -2,16 +2,20 @@
 
 Phone-to-PC file transfer with a swipe-to-send gesture. Run **Toss** on your Windows PC, scan the QR code with your phone, pick a file, and swipe up.
 
-## Download (end users)
+**[Download latest release (Windows)](https://github.com/gamberoferoce/Toss/releases/latest)**
 
-**You do not need to clone this repository.**
+![Toss receiver UI](docs/receiver-screenshot.png)
 
-1. Open **[Releases](https://github.com/gamberoferoce/Toss/releases)**
-2. Download `Toss.zip` from the latest release
+## Download
+
+1. Open the **[latest release](https://github.com/gamberoferoce/Toss/releases/latest)**
+2. Download `Toss.zip`
 3. Extract all files to one folder
 4. Double-click **Toss.exe**
 
 The zip contains `Toss.exe`, `TossServer.exe`, and `README.txt` (usage and troubleshooting).
+
+You do not need to clone this repository to use Toss.
 
 ## Network & privacy
 
@@ -35,7 +39,7 @@ WebView2 host in dev:
 
 ```bash
 # terminal 1
-set FILESHARING_OPEN=0
+set TOSS_OPEN=0
 npm start
 
 # terminal 2
