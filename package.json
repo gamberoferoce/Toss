@@ -23,6 +23,9 @@
     "scripts": [
       "server/index.js",
       "server/ui-html.js"
+    ],
+    "assets": [
+      "package.json"
     ]
   }
 }

@@ -60,19 +60,15 @@ sealed class MainForm : Form
 
     async Task EnsureServerAsync()
     {
-        var existing = await ProbeServerAsync();
-        if (existing > 0)
-        {
-            _port = existing;
-            return;
-        }
-
         var serverExe = Path.Combine(AppContext.BaseDirectory, "FileSharing.exe");
         if (!File.Exists(serverExe))
         {
             throw new FileNotFoundException(
                 "FileSharing.exe not found next to Toss.exe.\nRe-extract the full zip.");
         }
+
+        KillSiblingServers(serverExe);
+        await Task.Delay(300);
 
         var psi = new ProcessStartInfo
         {
@@ -93,6 +89,28 @@ sealed class MainForm : Form
         if (_port <= 0)
         {
             throw new TimeoutException("FileSharing server did not start in time.");
+        }
+    }
+
+    static void KillSiblingServers(string serverExe)
+    {
+        foreach (var proc in Process.GetProcessesByName("FileSharing"))
+        {
+            try
+            {
+                if (proc.HasExited) continue;
+                var path = proc.MainModule?.FileName;
+                if (path is null
+                    || !path.Equals(serverExe, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                proc.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                /* ponytail: best-effort cleanup of stale server */
+            }
         }
     }
 

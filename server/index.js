@@ -15,6 +15,14 @@ const DATA_ROOT = process.pkg
 const INCOMING_DIR = path.join(DATA_ROOT, "incoming");
 const LOG_FILE = path.join(DATA_ROOT, "filesharing.log");
 const PORT_FILE = path.join(DATA_ROOT, "port.txt");
+const PID_FILE = path.join(DATA_ROOT, "server.pid");
+const VERSION = (() => {
+  try {
+    return require(path.join(__dirname, "..", "package.json")).version;
+  } catch {
+    return "1.0.0";
+  }
+})();
 const PORTS = [Number(process.env.PORT) || 3000, 3001, 3002, 3003].filter(
   (p, i, a) => a.indexOf(p) === i
 );
@@ -180,7 +188,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 512 * 1024 * 1024 } });
 const app = express();
 
-app.get("/api/ping", (_req, res) => res.json({ ok: true, port: activePort }));
+app.get("/api/ping", (_req, res) => res.json({ ok: true, port: activePort, version: VERSION }));
 
 app.get("/api/info", (_req, res) => {
   const all = listLanIps();
@@ -341,6 +349,7 @@ async function onReady() {
 
   try {
     fs.writeFileSync(PORT_FILE, String(activePort));
+    fs.writeFileSync(PID_FILE, String(process.pid));
   } catch {
     /* ignore */
   }
@@ -373,12 +382,32 @@ function tryListen(portIndex) {
   server.listen(activePort, "0.0.0.0", () => onReady());
 }
 
+function cleanupRuntimeFiles() {
+  for (const file of [PORT_FILE, PID_FILE]) {
+    try {
+      fs.unlinkSync(file);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 if (process.pkg && process.env.FILESHARING_OPEN == null && process.env.FILESHARING_SERVER_ONLY !== "1") {
   process.env.FILESHARING_OPEN = "1";
 }
 
 process.on("uncaughtException", (err) => {
   waitExit(1, "Fatal error: " + err.message);
+});
+
+process.on("SIGINT", () => {
+  cleanupRuntimeFiles();
+  process.exit(0);
+});
+
+process.on("SIGTERM", () => {
+  cleanupRuntimeFiles();
+  process.exit(0);
 });
 
 tryListen(0);

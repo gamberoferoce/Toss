@@ -25,6 +25,12 @@ WHERE FILES GO
   %APPDATA%\FileSharing\incoming
   Use "Show in Explorer" on the PC receiver page.
 
+NETWORK & PRIVACY (read this)
+  Toss is built for a network you control (home, studio, gallery setup).
+  Anyone on the same Wi-Fi can send files to this PC while Toss is running.
+  There is no password — that keeps setup instant.
+  Do not use on public or guest Wi-Fi. Stop Toss when you are done.
+
 TROUBLESHOOTING
   • Phone won't connect
       - Phone on same Wi-Fi (not mobile data)
