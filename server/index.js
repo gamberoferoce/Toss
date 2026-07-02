@@ -14,6 +14,7 @@ const DATA_ROOT = process.pkg
   : path.join(__dirname, "..");
 const INCOMING_DIR = path.join(DATA_ROOT, "incoming");
 const LOG_FILE = path.join(DATA_ROOT, "filesharing.log");
+const PORT_FILE = path.join(DATA_ROOT, "port.txt");
 const PORTS = [Number(process.env.PORT) || 3000, 3001, 3002, 3003].filter(
   (p, i, a) => a.indexOf(p) === i
 );
@@ -338,6 +339,12 @@ async function onReady() {
     `Running on port ${activePort}, phone ${phoneUrl}, pc ${receiverUrl}, lanReachable=${lanReachable}`
   );
 
+  try {
+    fs.writeFileSync(PORT_FILE, String(activePort));
+  } catch {
+    /* ignore */
+  }
+
   if (process.env.FILESHARING_OPEN === "1") {
     openBrowser(receiverUrl);
   }
@@ -366,7 +373,7 @@ function tryListen(portIndex) {
   server.listen(activePort, "0.0.0.0", () => onReady());
 }
 
-if (process.pkg && process.env.FILESHARING_OPEN == null) {
+if (process.pkg && process.env.FILESHARING_OPEN == null && process.env.FILESHARING_SERVER_ONLY !== "1") {
   process.env.FILESHARING_OPEN = "1";
 }
 

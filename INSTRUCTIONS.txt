@@ -1,31 +1,34 @@
-FILESHARING — Quick start
-==========================
-
-REQUIREMENTS
-  • Windows 10/11
-  • PC and phone on the same Wi-Fi network
-
-GETTING STARTED
-  1. Double-click FileSharing.exe
-  2. Your browser opens the receiver page on this PC
-  3. Do NOT close the black window — keep it open while sharing files
-
-FROM YOUR PHONE
-  1. Scan the QR code shown on the PC
-  2. Tap "Choose file"
-  3. Hold the circle, charge the ring, swipe up to send
-
-WHERE FILES GO
-  %APPDATA%\FileSharing\incoming
-  (created automatically — use "Show in Explorer" on the PC page)
-
-TROUBLESHOOTING
-  • Phone won't connect → same Wi-Fi? Allow Windows Firewall on first launch.
-  • Windows blocks the exe → "More info" → "Run anyway"
-
-TO STOP
-  Close the FileSharing window.
-
-NOTE FOR DEVELOPERS
-  Run from source: npm install && npm start
-  Rebuild exe: npm run pack
+TOSS — Quick start
+==================
+
+REQUIREMENTS
+  • Windows 10/11
+  • PC and phone on the same Wi-Fi network
+  • WebView2 runtime (included with Microsoft Edge on most PCs)
+
+GETTING STARTED
+  1. Double-click Toss.exe (or Start FileSharing.bat)
+  2. The receiver opens in its own window — not a browser tab
+  3. FileSharing.exe runs in the background; closing Toss stops everything
+
+FROM YOUR PHONE
+  1. Scan the QR code shown on the PC
+  2. Tap "Choose file"
+  3. Hold the circle, charge the ring, swipe up to send
+
+WHERE FILES GO
+  %APPDATA%\FileSharing\incoming
+  (created automatically — use "Show in Explorer" on the PC page)
+
+TROUBLESHOOTING
+  • Phone won't connect → same Wi-Fi? Run Allow Network.bat as Administrator once.
+  • Windows blocks the exe → "More info" → "Run anyway"
+  • Toss won't open → install Microsoft Edge / WebView2 runtime
+
+TO STOP
+  Close the Toss window.
+
+NOTE FOR DEVELOPERS
+  Run from source: npm install && npm start
+  Run WebView2 host in dev: FILESHARING_OPEN=0 npm start, then dotnet run --project host
+  Rebuild zip: npm run pack
