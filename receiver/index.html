@@ -537,7 +537,7 @@
       <p class="welcome-lead">Keep this window open on your PC.</p>
       <ol class="welcome-steps">
         <li>Phone and PC on the same Wi‑Fi (not mobile data)</li>
-        <li>If the phone cannot connect, run <strong>Allow Network.bat</strong> as Administrator once</li>
+        <li>If the phone cannot connect, allow Toss through Windows Firewall (see README.txt)</li>
         <li>Scan the QR code with your phone</li>
         <li>Choose a file, hold, charge the ring, swipe up</li>
       </ol>
@@ -817,7 +817,7 @@
           phoneUrlEl.textContent = info.phoneUrl;
           if (info.lanReachable === false) {
             netWarningEl.textContent =
-              "Phone may not connect — run Allow Network.bat as Administrator, then restart FileSharing.";
+              "Phone may not connect — allow Toss/FileSharing in Windows Firewall (see README.txt).";
             netWarningEl.classList.add("show");
             netHintEl.textContent = "Do not test the phone URL on this PC — use your phone.";
           } else {

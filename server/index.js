@@ -140,7 +140,7 @@ function tryFirewallRules() {
         if (err) failed += 1;
         if (done !== cmds.length) return;
         if (failed) {
-          firewallHint = "Run Allow Network.bat as Administrator (in the zip folder).";
+          firewallHint = "Allow Toss and FileSharing through Windows Firewall (see README.txt).";
         } else {
           firewallHint = "";
         }
@@ -294,7 +294,7 @@ async function onReady() {
   const firewallFailed = await tryFirewallRules();
   if (firewallFailed) {
     console.log("  Firewall: could not add rules automatically.");
-    console.log("  Run Allow Network.bat as Administrator, then restart FileSharing.");
+    console.log("  Run as Administrator once, or allow in Windows Firewall (see README.txt).");
   } else {
     console.log(`  Firewall: allowed FileSharing and TCP ports ${PORTS.join(", ")}.`);
   }
@@ -326,7 +326,7 @@ async function onReady() {
     console.log("  WARNING: no LAN IP — phone cannot connect until PC has Wi-Fi/Ethernet.");
   } else if (!lanReachable) {
     console.log("  WARNING: phone URL blocked by Windows Firewall (common).");
-    console.log("  Fix: run Allow Network.bat as Administrator, then restart FileSharing.");
+    console.log("  Fix: allow Toss/FileSharing in Windows Firewall (see README.txt).");
     console.log("  Note: opening the phone URL on this PC may also fail — test from the phone.");
   } else {
     console.log("  Network check: phone URL reachable on this PC.");
