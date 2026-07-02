@@ -16,6 +16,7 @@ sealed class MainForm : Form
     public MainForm()
     {
         Text = "Toss";
+        FormBorderStyle = FormBorderStyle.None;
         MinimumSize = new Size(960, 640);
         StartPosition = FormStartPosition.CenterScreen;
         WindowState = FormWindowState.Maximized;
@@ -130,6 +131,15 @@ sealed class MainForm : Form
         settings.AreDevToolsEnabled = false;
         settings.IsStatusBarEnabled = false;
         settings.IsZoomControlEnabled = false;
+        settings.IsWebMessageEnabled = true;
+
+        _web.CoreWebView2.WebMessageReceived += (_, args) =>
+        {
+            if (args.TryGetWebMessageAsString() == "close")
+            {
+                BeginInvoke(Close);
+            }
+        };
 
         _web.CoreWebView2.NavigationStarting += (_, args) =>
         {

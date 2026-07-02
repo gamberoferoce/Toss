@@ -148,7 +148,7 @@ function tryFirewallRules() {
         if (err) failed += 1;
         if (done !== cmds.length) return;
         if (failed) {
-          firewallHint = "Allow Toss and FileSharing through Windows Firewall (see README.txt).";
+          firewallHint = "Allow Toss through Windows Firewall (see README.txt).";
         } else {
           firewallHint = "";
         }
@@ -288,6 +288,8 @@ function attachWs(server) {
       }
       if (msg.type === "launch") {
         broadcast({ type: "launch", name: msg.name || "file", size: msg.size || 0 }, ws);
+      } else if (msg.type === "phone-online") {
+        broadcast({ type: "phone-online" }, ws);
       }
     });
   });
@@ -314,7 +316,7 @@ async function onReady() {
   }
 
   console.log("");
-  console.log("  FileSharing is running");
+  console.log("  Toss is running");
   console.log("  ----------------------");
   console.log("  ON THIS PC, open in your browser:");
   console.log(`    ${receiverUrl}`);

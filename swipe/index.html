@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FileSharing — Send</title>
+  <title>Toss — Send</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -181,6 +184,8 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
+      font-family: "Syne", system-ui, sans-serif;
+      font-weight: 600;
       font-size: 11px;
       letter-spacing: 0.18em;
       color: #555;
@@ -233,7 +238,8 @@
       border: 1px solid rgba(96, 165, 250, 0.35);
       background: rgba(15, 23, 42, 0.72);
       color: #bfdbfe;
-      font: inherit;
+      font-family: "Syne", system-ui, sans-serif;
+      font-weight: 600;
       font-size: 11px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
@@ -559,6 +565,9 @@
     function connectRelay() {
       const proto = location.protocol === "https:" ? "wss:" : "ws:";
       state.ws = new WebSocket(proto + "//" + location.host);
+      state.ws.onopen = () => {
+        state.ws.send(JSON.stringify({ type: "phone-online" }));
+      };
       state.ws.onclose = () => setTimeout(connectRelay, 1000);
       state.ws.onerror = () => state.ws.close();
     }
@@ -567,7 +576,7 @@
       try {
         const res = await fetch("/api/ping", { cache: "no-store" });
         if (!res.ok) throw new Error("ping failed");
-        phoneStatusEl.textContent = "Connected to PC";
+        phoneStatusEl.textContent = "Connected to Toss";
         phoneStatusEl.className = "ok";
       } catch {
         phoneStatusEl.textContent = "Cannot reach PC";
@@ -591,7 +600,7 @@
         if (!res.ok) {
           throw new Error(data.error || "upload failed");
         }
-        setStatus("File received on PC", "ok");
+        setStatus("File received on Toss", "ok");
         setSelectedFile(null);
       } catch (err) {
         setStatus("Upload failed", "err");
