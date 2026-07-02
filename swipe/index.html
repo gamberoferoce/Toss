@@ -6,7 +6,7 @@
   <title>Toss — Send</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=EB+Garamond:wght@400&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -16,9 +16,80 @@
       overflow: hidden;
       background: #050508;
       color: #fff;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: "Syne", system-ui, sans-serif;
+      font-weight: 500;
       user-select: none;
       touch-action: manipulation;
+    }
+
+    .toss-btn {
+      appearance: none;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: rgba(15, 23, 42, 0.72);
+      color: #bfdbfe;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 12px 20px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      -webkit-tap-highlight-color: transparent;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .toss-btn:active { background: rgba(30, 58, 138, 0.55); }
+    .toss-btn:hover,
+    .toss-btn:focus-visible {
+      border-color: rgba(125, 211, 252, 0.55);
+      color: #e0f2fe;
+      outline: none;
+    }
+
+    .toss-btn--icon {
+      padding: 0;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .toss-btn--icon svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .toss-caption {
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
+    }
+
+    #toss-logo {
+      position: fixed;
+      top: max(16px, env(safe-area-inset-top));
+      left: max(20px, env(safe-area-inset-left));
+      z-index: 3;
+      font-family: "EB Garamond", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: 18px;
+      letter-spacing: 0.26em;
+      color: #0b1429;
+      pointer-events: none;
+      user-select: none;
     }
 
     #fx-canvas {
@@ -80,6 +151,13 @@
     #swipe-zone.spring-back #swipe-core { animation: none; transition: transform 0.5s cubic-bezier(0.34, 1.45, 0.64, 1); }
     #swipe-zone.charging #swipe-core { animation: charge-pulse 0.9s ease-in-out infinite; }
     #swipe-zone.ready #swipe-core { animation: ready-throb 1.1s ease-in-out infinite; }
+    #swipe-zone.ready-pop #swipe-core { animation: ready-pop 0.34s cubic-bezier(0.34, 1.45, 0.64, 1); }
+
+    @keyframes ready-pop {
+      0% { transform: scale(1) translateY(0); }
+      40% { transform: scale(1.07) translateY(-8px); }
+      100% { transform: scale(1) translateY(0); }
+    }
     #swipe-zone.launching #swipe-core,
     #swipe-zone.dragging #swipe-core { animation: none; }
 
@@ -232,26 +310,6 @@
       max-width: min(92vw, 360px);
     }
 
-    #pick-btn {
-      display: inline-block;
-      appearance: none;
-      border: 1px solid rgba(96, 165, 250, 0.35);
-      background: rgba(15, 23, 42, 0.72);
-      color: #bfdbfe;
-      font-family: "Syne", system-ui, sans-serif;
-      font-weight: 600;
-      font-size: 11px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 12px 20px;
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-      -webkit-tap-highlight-color: transparent;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: border-color 0.2s, background 0.2s, color 0.2s;
-    }
-
     #file-pick.disabled {
       pointer-events: none;
       opacity: 0.45;
@@ -268,35 +326,7 @@
       white-space: nowrap;
     }
 
-    #phone-status {
-      position: fixed;
-      top: max(16px, env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 5;
-      font-size: 9px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: #64748b;
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(51, 65, 85, 0.5);
-      background: rgba(15, 23, 42, 0.8);
-    }
-
-    #phone-status.ok { color: #86efac; border-color: rgba(34, 197, 94, 0.35); }
-    #phone-status.err { color: #fca5a5; border-color: rgba(248, 113, 113, 0.35); }
-
-    #pick-btn:active { background: rgba(30, 58, 138, 0.55); }
-    #pick-btn.has-file {
-      border-color: rgba(125, 211, 252, 0.55);
-      color: #e0f2fe;
-    }
-
     #file-name {
-      font-size: 10px;
-      letter-spacing: 0.06em;
-      color: #64748b;
       text-align: center;
       max-width: 100%;
       overflow: hidden;
@@ -313,13 +343,9 @@
       left: 50%;
       transform: translateX(-50%) translateY(-8px);
       z-index: 4;
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #64748b;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+      transition: opacity 0.25s ease, transform 0.25s ease;
     }
 
     #status.show {
@@ -327,8 +353,12 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    #status.ok { color: #86efac; }
     #status.err { color: #fca5a5; }
+
+    #pick-btn.has-file {
+      border-color: rgba(125, 211, 252, 0.55);
+      color: #e0f2fe;
+    }
 
     @keyframes shake-fail {
       0%, 100% { transform: translateX(0) rotate(0deg); }
@@ -360,38 +390,6 @@
       right: 16px;
       bottom: 16px;
       z-index: 20;
-      width: 40px;
-      height: 40px;
-      border: 1px solid #2a2a2a;
-      border-radius: 10px;
-      background: rgba(18, 18, 22, 0.85);
-      color: #888;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-      backdrop-filter: blur(8px);
-      transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
-    }
-
-    #fullscreen-btn:hover,
-    #fullscreen-btn:focus-visible {
-      color: #cbd5e1;
-      border-color: #3b82f6;
-      background: rgba(30, 41, 59, 0.9);
-      outline: none;
-    }
-
-    #fullscreen-btn svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      pointer-events: none;
     }
 
     #fullscreen-btn .icon-exit { display: none; }
@@ -404,6 +402,8 @@
   <div class="bg-orb a"></div>
   <div class="bg-orb b"></div>
   <div class="bg-orb c"></div>
+
+  <p id="toss-logo" aria-hidden="true">TOSS</p>
 
   <div id="swipe-zone">
     <div id="swipe-core">
@@ -438,16 +438,15 @@
     </div>
   </div>
 
-  <div id="status" aria-live="polite"></div>
-  <div id="phone-status">Connecting…</div>
+  <div id="status" class="toss-caption" aria-live="polite"></div>
 
   <div id="file-pick">
-    <label id="pick-btn" for="file-input">Choose file</label>
-    <div id="file-name"></div>
+    <label id="pick-btn" class="toss-btn" for="file-input">Choose file</label>
+    <div id="file-name" class="toss-caption"></div>
     <input id="file-input" type="file" accept="*/*">
   </div>
 
-  <button id="fullscreen-btn" type="button" aria-label="Fullscreen" title="Fullscreen">
+  <button id="fullscreen-btn" class="toss-btn toss-btn--icon" type="button" aria-label="Fullscreen" title="Fullscreen">
     <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8 3H5a2 2 0 0 0-2 2v3" />
       <path d="M16 3h3a2 2 0 0 1 2 2v3" />
@@ -490,7 +489,6 @@
     const fileInput = $("file-input");
     const fileNameEl = $("file-name");
     const statusEl = $("status");
-    const phoneStatusEl = $("phone-status");
     const labelEl = $("label");
 
     const ringArcs = [ringProgress, ringGlow, ringTip];
@@ -516,6 +514,8 @@
       ambient: [],
       burst: [],
       visualsActive: true,
+      readyFeedback: false,
+      audioCtx: null,
     };
 
     function setLabel() {
@@ -526,12 +526,12 @@
       }
     }
 
-    function setStatus(text, kind) {
+    function setStatus(text) {
       clearTimeout(state.statusTimer);
       statusEl.textContent = text;
-      statusEl.className = kind ? `show ${kind}` : "show";
+      statusEl.className = text ? "toss-caption show err" : "toss-caption";
       state.statusTimer = setTimeout(() => {
-        statusEl.className = "";
+        statusEl.className = "toss-caption";
         statusEl.textContent = "";
       }, 2400);
     }
@@ -572,18 +572,6 @@
       state.ws.onerror = () => state.ws.close();
     }
 
-    async function checkConnection() {
-      try {
-        const res = await fetch("/api/ping", { cache: "no-store" });
-        if (!res.ok) throw new Error("ping failed");
-        phoneStatusEl.textContent = "Connected to Toss";
-        phoneStatusEl.className = "ok";
-      } catch {
-        phoneStatusEl.textContent = "Cannot reach PC";
-        phoneStatusEl.className = "err";
-      }
-    }
-
     function setLaunchingUi(on) {
       filePick.classList.toggle("disabled", on);
     }
@@ -596,14 +584,9 @@
 
       try {
         const res = await fetch("/api/upload", { method: "POST", body });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          throw new Error(data.error || "upload failed");
-        }
-        setStatus("File received on Toss", "ok");
+        if (!res.ok) return;
         setSelectedFile(null);
       } catch (err) {
-        setStatus("Upload failed", "err");
         console.error(err);
       }
     }
@@ -615,7 +598,6 @@
     fileInput.addEventListener("change", () => {
       const file = fileInput.files && fileInput.files[0];
       setSelectedFile(file || null);
-      if (file) setStatus("Ready to launch", "");
       scheduleReenterFullscreen();
     });
 
@@ -788,6 +770,52 @@
       setTimeout(() => ghost.remove(), 520);
     }
 
+    function primeAudio() {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx || state.audioCtx) return;
+        state.audioCtx = new Ctx();
+      } catch {
+        /* ponytail: optional chime */
+      }
+    }
+
+    function playReadyChime() {
+      try {
+        if (!state.audioCtx) return;
+        const ctx = state.audioCtx;
+        if (ctx.state === "suspended") ctx.resume();
+        const t = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(520, t);
+        osc.frequency.exponentialRampToValueAtTime(760, t + 0.14);
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.07, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.22);
+      } catch {
+        /* ponytail: silent if audio blocked */
+      }
+    }
+
+    function pulseReadyFeedback() {
+      if (state.readyFeedback) return;
+      state.readyFeedback = true;
+      if (navigator.vibrate) navigator.vibrate([12, 36, 14]);
+      playReadyChime();
+      swipeZone.classList.remove("ready-pop");
+      void swipeZone.offsetWidth;
+      swipeZone.classList.add("ready-pop");
+      const rect = swipeZone.getBoundingClientRect();
+      spawnRipple(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      setTimeout(() => swipeZone.classList.remove("ready-pop"), 360);
+    }
+
     function spawnRipple(x, y) {
       const rect = swipeCore.getBoundingClientRect();
       rippleEl.style.left = (x - rect.left) + "px";
@@ -816,15 +844,19 @@
     function resetCharge() {
       stopCharging();
       state.progress = 0;
-      swipeZone.classList.remove("ready");
+      state.readyFeedback = false;
+      swipeZone.classList.remove("ready", "ready-pop");
       updateRing();
     }
 
     function startCharging() {
       stopCharging();
+      state.readyFeedback = false;
       state.chargeTimer = setInterval(() => {
+        const wasReady = state.progress >= 1;
         state.progress = Math.min(1, state.progress + CHARGE_STEP);
         updateRing();
+        if (!wasReady && state.progress >= 1) pulseReadyFeedback();
         if (state.progress >= 1) stopCharging();
       }, CFG.chargeIntervalMs);
     }
@@ -927,7 +959,7 @@
       if (swipeDelta > CFG.swipeThresholdPx && state.progress >= 1) {
         if (!state.file) {
           shakeRing();
-          setStatus("Choose a file first", "err");
+          setStatus("Choose a file first");
           return;
         }
         const { targetY, targetScale } = pullTargets(swipeDelta);
@@ -939,7 +971,6 @@
         launchCircle(targetY, targetScale);
       } else if (swipeDelta > CFG.swipeThresholdPx) {
         shakeRing();
-        setStatus("Hold longer, then swipe", "err");
       } else {
         springBack();
       }
@@ -948,6 +979,7 @@
     swipeZone.addEventListener("pointerdown", (e) => {
       if (state.launching) return;
       e.preventDefault();
+      primeAudio();
       cancelAnimations();
       state.pointerDown = true;
       state.startY = e.clientY;
@@ -1061,8 +1093,6 @@
     resizeFx();
     updateFullscreenBtn();
     tick();
-    checkConnection();
-    setInterval(checkConnection, 10000);
     connectRelay();
   </script>
 </body>

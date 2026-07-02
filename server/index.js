@@ -10,10 +10,10 @@ const QRCode = require("qrcode");
 const WebSocket = require("ws");
 
 const DATA_ROOT = process.pkg
-  ? path.join(process.env.APPDATA || path.dirname(process.execPath), "FileSharing")
+  ? path.join(process.env.APPDATA || path.dirname(process.execPath), "Toss")
   : path.join(__dirname, "..");
 const INCOMING_DIR = path.join(DATA_ROOT, "incoming");
-const LOG_FILE = path.join(DATA_ROOT, "filesharing.log");
+const LOG_FILE = path.join(DATA_ROOT, "toss.log");
 const PORT_FILE = path.join(DATA_ROOT, "port.txt");
 const PID_FILE = path.join(DATA_ROOT, "server.pid");
 const VERSION = (() => {
@@ -65,7 +65,7 @@ let ui;
 try {
   ui = require("./ui-html");
 } catch (err) {
-  waitExit(1, "UI bundle missing — rebuild or re-download FileSharing.exe.\n" + err.message);
+  waitExit(1, "UI bundle missing — rebuild or re-download Toss.\n" + err.message);
 }
 
 function listLanIps() {
@@ -131,13 +131,13 @@ function tryFirewallRules() {
     }
     const exe = process.execPath.replace(/"/g, '\\"');
     const cmds = [
-      `netsh advfirewall firewall delete rule name="FileSharing Program"`,
-      `netsh advfirewall firewall add rule name="FileSharing Program" dir=in action=allow program="${exe}" enable=yes profile=any`,
+      `netsh advfirewall firewall delete rule name="Toss Server"`,
+      `netsh advfirewall firewall add rule name="Toss Server" dir=in action=allow program="${exe}" enable=yes profile=any`,
     ];
     for (const p of PORTS) {
-      cmds.push(`netsh advfirewall firewall delete rule name="FileSharing TCP ${p}"`);
+      cmds.push(`netsh advfirewall firewall delete rule name="Toss TCP ${p}"`);
       cmds.push(
-        `netsh advfirewall firewall add rule name="FileSharing TCP ${p}" dir=in action=allow protocol=TCP localport=${p} enable=yes profile=any`
+        `netsh advfirewall firewall add rule name="Toss TCP ${p}" dir=in action=allow protocol=TCP localport=${p} enable=yes profile=any`
       );
     }
     let failed = 0;
@@ -306,7 +306,7 @@ async function onReady() {
     console.log("  Firewall: could not add rules automatically.");
     console.log("  Run as Administrator once, or allow in Windows Firewall (see README.txt).");
   } else {
-    console.log(`  Firewall: allowed FileSharing and TCP ports ${PORTS.join(", ")}.`);
+    console.log(`  Firewall: allowed Toss on TCP ports ${PORTS.join(", ")}.`);
   }
   await new Promise((r) => setTimeout(r, 400));
   if (ip !== "127.0.0.1") {
@@ -336,7 +336,7 @@ async function onReady() {
     console.log("  WARNING: no LAN IP — phone cannot connect until PC has Wi-Fi/Ethernet.");
   } else if (!lanReachable) {
     console.log("  WARNING: phone URL blocked by Windows Firewall (common).");
-    console.log("  Fix: allow Toss/FileSharing in Windows Firewall (see README.txt).");
+    console.log("  Fix: allow Toss through Windows Firewall (see README.txt).");
     console.log("  Note: opening the phone URL on this PC may also fail — test from the phone.");
   } else {
     console.log("  Network check: phone URL reachable on this PC.");

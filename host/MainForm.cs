@@ -21,6 +21,7 @@ sealed class MainForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         WindowState = FormWindowState.Maximized;
         BackColor = Color.FromArgb(5, 5, 8);
+        _web.DefaultBackgroundColor = Color.FromArgb(255, 5, 5, 8);
         Controls.Add(_web);
 
         Load += OnLoadAsync;
@@ -31,8 +32,9 @@ sealed class MainForm : Form
     {
         try
         {
-            await EnsureServerAsync();
             await InitWebViewAsync();
+            _web.CoreWebView2.NavigateToString(SplashHtml.Value);
+            await EnsureServerAsync();
             _web.Source = new Uri($"http://127.0.0.1:{_port}/receiver/");
         }
         catch (Exception ex)
@@ -61,11 +63,11 @@ sealed class MainForm : Form
 
     async Task EnsureServerAsync()
     {
-        var serverExe = Path.Combine(AppContext.BaseDirectory, "FileSharing.exe");
+        var serverExe = Path.Combine(AppContext.BaseDirectory, "TossServer.exe");
         if (!File.Exists(serverExe))
         {
             throw new FileNotFoundException(
-                "FileSharing.exe not found next to Toss.exe.\nRe-extract the full zip.");
+                "TossServer.exe not found next to Toss.exe.\nRe-extract the full zip.");
         }
 
         KillSiblingServers(serverExe);
@@ -83,19 +85,19 @@ sealed class MainForm : Form
         psi.Environment["FILESHARING_SERVER_ONLY"] = "1";
 
         _server = Process.Start(psi)
-            ?? throw new InvalidOperationException("Could not start FileSharing.exe.");
+            ?? throw new InvalidOperationException("Could not start TossServer.exe.");
         _startedServer = true;
 
         _port = await WaitForServerAsync(TimeSpan.FromSeconds(30));
         if (_port <= 0)
         {
-            throw new TimeoutException("FileSharing server did not start in time.");
+            throw new TimeoutException("Toss server did not start in time.");
         }
     }
 
     static void KillSiblingServers(string serverExe)
     {
-        foreach (var proc in Process.GetProcessesByName("FileSharing"))
+        foreach (var proc in Process.GetProcessesByName("TossServer"))
         {
             try
             {
@@ -183,7 +185,7 @@ sealed class MainForm : Form
         {
             var path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "FileSharing",
+                "Toss",
                 "port.txt");
             if (!File.Exists(path)) return 0;
             return int.TryParse(File.ReadAllText(path).Trim(), out var port) ? port : 0;

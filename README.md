@@ -7,11 +7,11 @@ Phone-to-PC file transfer with a swipe-to-send gesture. Run **Toss** on your Win
 **You do not need to clone this repository.**
 
 1. Open **[Releases](https://github.com/gamberoferoce/Toss/releases)**
-2. Download `FileSharing.zip` from the latest release
+2. Download `Toss.zip` from the latest release
 3. Extract all files to one folder
 4. Double-click **Toss.exe**
 
-The zip contains `Toss.exe`, `FileSharing.exe`, and `README.txt` (usage and troubleshooting).
+The zip contains `Toss.exe`, `TossServer.exe`, and `README.txt` (usage and troubleshooting).
 
 ## Network & privacy
 
@@ -42,13 +42,15 @@ npm start
 dotnet run --project host
 ```
 
+`Toss.exe` shows an animated splash (same background as the receiver) while the server starts, then opens the receiver UI.
+
 Build the distribution zip:
 
 ```bash
 npm run pack
 ```
 
-Output: `dist/FileSharing.zip`
+Output: `dist/Toss.zip`
 
 Publish a GitHub Release (requires [GitHub CLI](https://cli.github.com/) logged in once: `gh auth login`):
 
@@ -63,5 +65,5 @@ npm run release
 | `server/` | Express server, upload, WebSocket |
 | `swipe/` | Phone sender UI |
 | `receiver/` | PC receiver UI |
-| `host/` | `Toss.exe` WebView2 shell |
+| `host/` | `Toss.exe` WebView2 shell + startup splash |
 | `scripts/` | Embed UI, pack zip, icon |

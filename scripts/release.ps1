@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
-$zip = Join-Path $root "dist\FileSharing.zip"
+$zip = Join-Path $root "dist\Toss.zip"
 $version = (Get-Content (Join-Path $root "package.json") -Raw | ConvertFrom-Json).version
 $tag = "v$version"
 
@@ -26,7 +26,7 @@ $notes = @"
 
 Windows distribution zip:
 - Toss.exe (receiver window)
-- FileSharing.exe (background server)
+- TossServer.exe (background server)
 - README.txt (usage)
 
 Extract to one folder and run Toss.exe.

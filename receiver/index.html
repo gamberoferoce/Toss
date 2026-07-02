@@ -6,7 +6,7 @@
   <title>Toss — Receiver</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600;700&family=EB+Garamond:wght@400&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -16,8 +16,66 @@
       overflow: hidden;
       background: #050508;
       color: #fff;
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: "Syne", system-ui, sans-serif;
+      font-weight: 500;
       user-select: none;
+    }
+
+    .toss-btn {
+      appearance: none;
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      background: rgba(15, 23, 42, 0.72);
+      color: #bfdbfe;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 12px 20px;
+      border-radius: 999px;
+      backdrop-filter: blur(8px);
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+
+    .toss-btn:active { background: rgba(30, 58, 138, 0.55); }
+    .toss-btn:hover,
+    .toss-btn:focus-visible {
+      border-color: rgba(125, 211, 252, 0.55);
+      color: #e0f2fe;
+      outline: none;
+    }
+
+    .toss-btn:disabled { opacity: 0.45; cursor: wait; }
+
+    .toss-btn--icon {
+      padding: 0;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+    }
+
+    .toss-btn--icon svg {
+      width: 16px;
+      height: 16px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .toss-caption {
+      font-family: inherit;
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #64748b;
     }
 
     #fx-canvas {
@@ -47,15 +105,63 @@
       66% { transform: translate(-20px, 25px) scale(0.95); }
     }
 
-    #catch-zone {
+    #app-chrome {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    #app-chrome.ready {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #toss-stage {
       position: absolute;
       top: 50%;
       left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      height: 250px;
+      z-index: 2;
+      pointer-events: none;
+      gap: 20px;
+    }
+
+    .toss-brand-letter {
+      font-family: "EB Garamond", "Times New Roman", serif;
+      font-weight: 400;
+      font-size: clamp(168px, 31vw, 244px);
+      line-height: 1;
+      height: 250px;
+      display: flex;
+      align-items: center;
+      color: #0b1429;
+      letter-spacing: -0.02em;
+      pointer-events: none;
+      user-select: none;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .toss-brand-t { margin-right: 0; }
+    .toss-brand-ss { margin-left: 0; }
+
+    #catch-zone {
+      position: relative;
+      top: auto;
+      left: auto;
       width: 230px;
       height: 230px;
-      transform: translate(-50%, -50%);
+      transform: none;
       z-index: 2;
       overflow: visible;
+      flex-shrink: 0;
     }
 
     #catch-zone.incoming,
@@ -156,13 +262,24 @@
 
     #hint {
       position: relative;
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #475569;
       text-align: center;
       max-width: min(90vw, 480px);
       transition: color 0.3s ease;
+    }
+
+    #hint.active,
+    #hint.done { color: #93c5fd; }
+
+    #file-meta {
+      display: block;
+      margin-top: 8px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: none;
+      color: #64748b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     #bottom-bar {
@@ -177,62 +294,9 @@
       gap: 12px;
     }
 
-    #explorer-btn {
-      appearance: none;
-      border: 1px solid rgba(96, 165, 250, 0.35);
-      background: rgba(15, 23, 42, 0.72);
-      color: #bfdbfe;
-      font: inherit;
-      font-size: 10px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 10px 16px;
-      border-radius: 999px;
-      backdrop-filter: blur(8px);
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, color 0.2s;
-    }
-
-    #explorer-btn:hover { border-color: rgba(125, 211, 252, 0.55); color: #e0f2fe; }
-    #explorer-btn:active { background: rgba(30, 58, 138, 0.55); }
-    #explorer-btn:disabled { opacity: 0.45; cursor: wait; }
-
-    #hint.active { color: #93c5fd; }
-    #hint.done { color: #86efac; }
-
-    #file-meta {
-      display: block;
-      margin-top: 8px;
-      font-size: 11px;
-      letter-spacing: 0.06em;
-      text-transform: none;
-      color: #64748b;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    #ws-dot {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #334155;
-      z-index: 4;
-      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.8);
-    }
-
-    #ws-dot.on { background: #22c55e; box-shadow: 0 0 12px rgba(34, 197, 94, 0.55); }
-
-    body.in-host #ws-dot {
-      right: 60px;
-    }
-
     #phone-link {
       position: fixed;
-      bottom: max(88px, calc(env(safe-area-inset-bottom) + 72px));
+      top: max(16px, env(safe-area-inset-top));
       left: max(20px, env(safe-area-inset-left));
       z-index: 4;
       display: flex;
@@ -311,39 +375,22 @@
 
     #qr-minimize-btn,
     #fullscreen-btn {
-      appearance: none;
-      border: 1px solid rgba(96, 165, 250, 0.28);
-      background: rgba(15, 23, 42, 0.85);
-      color: #94a3b8;
-      font: inherit;
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      border: none;
+      background: transparent;
     }
 
     #qr-minimize-btn:hover,
-    #fullscreen-btn:hover {
-      color: #e0f2fe;
-      border-color: rgba(125, 211, 252, 0.45);
-      background: rgba(30, 58, 138, 0.55);
+    #qr-minimize-btn:focus-visible,
+    #fullscreen-btn:hover,
+    #fullscreen-btn:focus-visible {
+      border: none;
     }
 
-    #qr-minimize-btn svg,
-    #fullscreen-btn svg {
-      width: 14px;
-      height: 14px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      pointer-events: none;
+    #qr-minimize-btn {
+      width: 28px;
+      height: 28px;
+      font-size: 14px;
+      line-height: 1;
     }
 
     #fullscreen-btn {
@@ -363,28 +410,15 @@
       top: max(16px, env(safe-area-inset-top));
       right: max(16px, env(safe-area-inset-right));
       z-index: 5;
-      appearance: none;
-      width: 36px;
-      height: 36px;
-      border: 1px solid rgba(96, 165, 250, 0.22);
-      border-radius: 12px;
-      background: rgba(5, 5, 8, 0.72);
-      color: #94a3b8;
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: color 0.2s, border-color 0.2s, background 0.2s;
     }
 
-    #close-app:hover {
-      color: #fecaca;
-      border-color: rgba(248, 113, 113, 0.45);
-      background: rgba(69, 10, 10, 0.55);
+    body.in-host #close-app {
+      display: flex;
     }
 
     #phone-link-title {
-      font-family: "Syne", system-ui, sans-serif;
       font-weight: 600;
       font-size: 9px;
       letter-spacing: 0.28em;
@@ -402,7 +436,7 @@
 
     #phone-url {
       font-size: 9px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       color: #93c5fd;
       text-align: center;
       word-break: break-all;
@@ -412,7 +446,7 @@
 
     #alt-urls {
       font-size: 8px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       color: #64748b;
       text-align: center;
       line-height: 1.5;
@@ -424,35 +458,6 @@
       color: #7dd3fc;
       user-select: text;
       margin-top: 4px;
-    }
-
-    #net-hint {
-      font-size: 8px;
-      letter-spacing: 0.06em;
-      color: #475569;
-      text-align: center;
-      line-height: 1.45;
-      max-width: 168px;
-      margin-top: 4px;
-    }
-
-    #net-warning {
-      display: none;
-      font-size: 8px;
-      letter-spacing: 0.04em;
-      color: #fecaca;
-      background: rgba(127, 29, 29, 0.45);
-      border: 1px solid rgba(248, 113, 113, 0.35);
-      border-radius: 10px;
-      padding: 8px 10px;
-      text-align: center;
-      line-height: 1.45;
-      max-width: 168px;
-      margin-top: 6px;
-    }
-
-    #net-warning.show {
-      display: block;
     }
 
     #welcome {
@@ -487,36 +492,39 @@
 
     .welcome-card h1 {
       font-family: "Syne", system-ui, sans-serif;
-      font-size: 13px;
-      letter-spacing: 0.28em;
+      font-size: 14px;
+      letter-spacing: 0.32em;
       text-transform: uppercase;
       color: #e0f2fe;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       font-weight: 700;
     }
 
     .welcome-lead {
+      font-weight: 500;
       font-size: 12px;
+      letter-spacing: 0.06em;
       color: #94a3b8;
-      margin-bottom: 18px;
-      line-height: 1.5;
+      margin-bottom: 20px;
+      line-height: 1.55;
     }
 
     .welcome-steps {
       list-style: none;
       text-align: left;
-      margin-bottom: 22px;
+      margin-bottom: 24px;
       counter-reset: step;
     }
 
     .welcome-steps li {
       position: relative;
-      padding-left: 28px;
-      margin-bottom: 12px;
+      padding-left: 30px;
+      margin-bottom: 14px;
+      font-weight: 500;
       font-size: 11px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
       color: #cbd5e1;
-      line-height: 1.55;
+      line-height: 1.6;
       counter-increment: step;
     }
 
@@ -525,34 +533,15 @@
       position: absolute;
       left: 0;
       top: 0;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       border: 1px solid rgba(96, 165, 250, 0.45);
       color: #93c5fd;
       font-size: 9px;
-      line-height: 18px;
+      font-weight: 600;
+      line-height: 20px;
       text-align: center;
-    }
-
-    #welcome-btn {
-      appearance: none;
-      border: 1px solid rgba(125, 211, 252, 0.45);
-      background: rgba(37, 99, 235, 0.35);
-      color: #e0f2fe;
-      font: inherit;
-      font-size: 10px;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      padding: 12px 22px;
-      border-radius: 999px;
-      cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease;
-    }
-
-    #welcome-btn:hover {
-      background: rgba(37, 99, 235, 0.55);
-      border-color: rgba(191, 219, 254, 0.65);
     }
   </style></head>
 <body>
@@ -560,11 +549,11 @@
   <div class="bg-orb a"></div>
   <div class="bg-orb b"></div>
   <div class="bg-orb c"></div>
-  <div id="ws-dot" title="Connected"></div>
 
-  <button id="close-app" type="button" aria-label="Close Toss" title="Close Toss">×</button>
+  <div id="app-chrome">
+  <button id="close-app" class="toss-btn toss-btn--icon" type="button" aria-label="Close Toss" title="Close Toss">×</button>
 
-  <button id="fullscreen-btn" type="button" aria-label="Fullscreen" title="Fullscreen">
+  <button id="fullscreen-btn" class="toss-btn toss-btn--icon" type="button" aria-label="Fullscreen" title="Fullscreen">
     <svg class="icon-enter" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M8 3H5a2 2 0 0 0-2 2v3" />
       <path d="M16 3h3a2 2 0 0 1 2 2v3" />
@@ -589,28 +578,28 @@
         <li>Scan the QR code with your phone</li>
         <li>Choose a file, hold, charge the ring, swipe up</li>
       </ol>
-      <button id="welcome-btn" type="button">Got it</button>
+      <button id="welcome-btn" class="toss-btn" type="button">Got it</button>
     </div>
   </div>
 
   <div id="phone-link">
     <div id="phone-link-toolbar">
       <p id="phone-link-title">Connect phone</p>
-      <button id="qr-minimize-btn" type="button" aria-label="Minimize QR code" title="Minimize">
+      <button id="qr-minimize-btn" class="toss-btn toss-btn--icon" type="button" aria-label="Minimize QR code" title="Minimize">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg>
       </button>
     </div>
     <div id="qr-body">
       <img id="qr-img" alt="QR code to open on your phone" width="120" height="120">
-      <p id="phone-url">…</p>
-      <div id="alt-urls"></div>
-      <p id="net-warning"></p>
-      <p id="net-hint">Phone must be on the same Wi‑Fi</p>
+      <p id="phone-url" class="toss-caption">…</p>
+      <div id="alt-urls" class="toss-caption"></div>
     </div>
     <div id="qr-mini" title="Show QR code">
       <img id="qr-mini-img" alt="" width="36" height="36">
     </div>
   </div>
+  <div id="toss-stage" aria-hidden="true">
+    <span class="toss-brand-letter toss-brand-t">T</span>
   <div id="catch-zone">
     <div id="catch-core">
       <div class="glow-disc outer"></div>
@@ -633,12 +622,16 @@
       <div id="label">ON<br>STANDBY</div>
     </div>
   </div>
+    <span class="toss-brand-letter toss-brand-ss">SS</span>
+  </div>
 
   <div id="bottom-bar">
-    <div id="hint">
+    <div id="hint" class="toss-caption">
       <span id="hint-text">Waiting for your phone</span>
       <span id="file-meta"></span>
-    </div>    <button id="explorer-btn" type="button">Show in Explorer</button>
+    </div>
+    <button id="explorer-btn" class="toss-btn" type="button">Show in Explorer</button>
+  </div>
   </div>
 
   <script>
@@ -659,9 +652,6 @@
     const closeAppBtn = document.getElementById("close-app");
     const phoneUrlEl = document.getElementById("phone-url");
     const altUrlsEl = document.getElementById("alt-urls");
-    const netHintEl = document.getElementById("net-hint");
-    const netWarningEl = document.getElementById("net-warning");
-    const wsDot = document.getElementById("ws-dot");
     const fxCanvas = document.getElementById("fx-canvas");
     const fxCtx = fxCanvas.getContext("2d");
 
@@ -844,7 +834,7 @@
 
     function onPhoneConnected() {
       phoneLinkEl.classList.add("phone-active");
-      hintTextEl.textContent = "Phone connected — swipe to send";
+      hintTextEl.textContent = "Ready";
       setQrCollapsed(true);
     }
 
@@ -867,30 +857,15 @@
         const res = await fetch("/api/info");
         if (!res.ok) return;
         const info = await res.json();
-        if (info.warnLocalhost) {
-          phoneUrlEl.textContent = "No LAN IP — check network";
-          netWarningEl.textContent = "PC has no Wi-Fi/Ethernet IP. Connect the PC to your home network.";
-          netWarningEl.classList.add("show");
-          netHintEl.textContent = "";
-        } else {
+        if (!info.warnLocalhost) {
           phoneUrlEl.textContent = info.phoneUrl;
-          if (info.lanReachable === false) {
-            netWarningEl.textContent =
-              "Phone may not connect — allow Toss through Windows Firewall (see README.txt).";
-            netWarningEl.classList.add("show");
-            netHintEl.textContent = "Do not test the phone URL on this PC — use your phone.";
-          } else {
-            netWarningEl.classList.remove("show");
-            netWarningEl.textContent = "";
-            netHintEl.textContent = "Phone must be on the same Wi-Fi";
-          }
         }
         qrImg.src = "/api/qr.svg?url=" + encodeURIComponent(info.phoneUrl);
         qrMiniImg.src = qrImg.src;
 
         const extras = (info.allUrls || []).filter((row) => row.url !== info.phoneUrl);
         if (extras.length) {
-          altUrlsEl.innerHTML = "If QR fails, try:<br>" + extras
+          altUrlsEl.innerHTML = extras
             .map((row) => '<span class="alt-link">' + row.url + "</span>")
             .join("");
         } else {
@@ -898,9 +873,6 @@
         }
       } catch (err) {
         console.error(err);
-        phoneUrlEl.textContent = "Server unreachable";
-        altUrlsEl.innerHTML = "";
-        netWarningEl.classList.remove("show");
       }
     }
 
@@ -958,20 +930,20 @@
       if (!inHost) return;
       document.body.classList.add("in-host");
       fullscreenBtn.style.display = "none";
-      closeAppBtn.style.display = "flex";
       closeAppBtn.addEventListener("click", () => {
         window.chrome.webview.postMessage("close");
       });
     }
 
     function initWelcome() {
-      if (sessionStorage.getItem("filesharing-welcome") === "1") {
+      if (sessionStorage.getItem("toss-welcome") === "1"
+        || sessionStorage.getItem("filesharing-welcome") === "1") {
         welcomeEl.classList.remove("show");
         return;
       }
       welcomeEl.classList.add("show");
       welcomeBtn.addEventListener("click", () => {
-        sessionStorage.setItem("filesharing-welcome", "1");
+        sessionStorage.setItem("toss-welcome", "1");
         welcomeEl.classList.remove("show");
       });
     }
@@ -979,9 +951,7 @@
     function connect() {
       const proto = location.protocol === "https:" ? "wss:" : "ws:";
       state.ws = new WebSocket(proto + "//" + location.host);
-      state.ws.onopen = () => wsDot.classList.add("on");
       state.ws.onclose = () => {
-        wsDot.classList.remove("on");
         setTimeout(connect, 1000);
       };
       state.ws.onerror = () => state.ws.close();
@@ -997,6 +967,9 @@
     window.addEventListener("resize", resizeFx);
     resizeFx();
     tick();
+    requestAnimationFrame(() => {
+      document.getElementById("app-chrome").classList.add("ready");
+    });
     initWelcome();
     initQrPanel();
     initFullscreen();
