@@ -1,14 +1,41 @@
 # Toss
 
-Phone-to-PC file transfer with a swipe-to-send gesture. Run **Toss** on your Windows PC, scan the QR code with your phone, pick a file, and swipe up.
+<p align="center">
+  <img src="docs/receiver-screenshot.png" alt="Toss — phone to PC file transfer" width="720">
+</p>
 
-**[Download latest release (Windows)](https://github.com/gamberoferoce/Toss/releases/latest)**
+<p align="center">
+  <strong>Send files from your phone to your PC with a swipe.</strong><br>
+  Same Wi‑Fi · no login · Windows
+</p>
 
-### Demo video
+<p align="center">
+  <a href="https://github.com/gamberoferoce/Toss/releases/latest">
+    <img src="https://img.shields.io/badge/Download-Windows%2010%2F11-2d6cdf?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows">
+  </a>
+</p>
 
-[![Watch the Toss demo on YouTube (12s)](docs/demo-youtube.jpg)](https://youtube.com/shorts/KNmo2pVBbmk)
+<p align="center">
+  <img src="https://img.shields.io/badge/network-same%20Wi--Fi-444?style=flat-square" alt="Same Wi-Fi">
+  <img src="https://img.shields.io/badge/login-none-444?style=flat-square" alt="No login">
+  <img src="https://img.shields.io/badge/gesture-swipe%20to%20send-444?style=flat-square" alt="Swipe to send">
+</p>
 
-**[▶ Watch on YouTube](https://youtube.com/shorts/KNmo2pVBbmk)** · 12 seconds
+## How it works
+
+1. **Run Toss** on your PC — a QR code appears on screen
+2. **Scan with your phone**, pick a file, and swipe up to send
+3. **File received** — saved to your incoming folder on the PC
+
+## Demo video
+
+<p align="center">
+  <a href="https://youtube.com/shorts/KNmo2pVBbmk">
+    <img src="docs/demo-youtube.jpg" alt="Watch the Toss demo on YouTube (12s)" width="480">
+  </a>
+  <br><br>
+  <strong><a href="https://youtube.com/shorts/KNmo2pVBbmk">▶ Watch on YouTube</a></strong> · 12 seconds
+</p>
 
 ## Download
 
