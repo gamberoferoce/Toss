@@ -21,6 +21,12 @@
   <img src="https://img.shields.io/badge/gesture-swipe%20to%20send-444?style=flat-square" alt="Swipe to send">
 </p>
 
+<p align="center">
+  <img src="docs/screenshots-duo.png" alt="Toss sender on phone and receiver on PC" width="720">
+  <br>
+  <sub>Phone · PC</sub>
+</p>
+
 ## How it works
 
 1. **Run Toss** on your PC — a QR code appears on screen
