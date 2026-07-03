@@ -4,7 +4,7 @@ Phone-to-PC file transfer with a swipe-to-send gesture. Run **Toss** on your Win
 
 **[Download latest release (Windows)](https://github.com/gamberoferoce/Toss/releases/latest)**
 
-![Toss demo — swipe to send, file received on PC](docs/demo.gif)
+[![Watch the Toss demo on YouTube](https://img.youtube.com/vi/KNmo2pVBbmk/hqdefault.jpg)](https://youtube.com/shorts/KNmo2pVBbmk)
 
 ## Download
 
